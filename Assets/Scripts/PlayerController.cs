@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,27 +19,41 @@ public class PlayerController : MonoBehaviour
 
         void Assemble(Vector3 direction)
         {
-            MeshRenderer currPlayer = GetComponent<MeshRenderer>();
-            Vector3 size = currPlayer.bounds.size;
-
-            Debug.Log(size.x + " " + size.y +  " " + size.z);
-
-            var anchor = transform.position + (Vector3.down + direction) * 0.5f;
+            Vector3 anchor = transform.position + (Vector3.down + direction) * 0.5f + RollOffset(direction);
             // Temporary movement- Only works for a cube.
-            var axis = Vector3.Cross(Vector3.up, direction);
+            Vector3 axis = Vector3.Cross(Vector3.up, direction);
             StartCoroutine(Roll(anchor, axis));
         }
     }
 
-    private bool isAlive()
+    private Vector3 RollOffset(Vector3 direction)
     {
-        Ray ray = new Ray(this.transform.position.RoundedPos(), Vector3.down);
+        Vector3 offset = Vector3.zero;
+
+        Ray ray = new Ray(this.transform.position.RoundedPos() + new Vector3(0.25f, 0.0f, 0.25f), Vector3.down);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 3))
+
+        float offsetAmount = transform.localScale.y * 0.5f; // height * 0.5
+        if (Physics.Raycast(ray, out hit, 100))
         {
-            return true;
+            if (hit.distance > 1)
+            {
+                offset = Vector3.down * offsetAmount * 0.5f;
+            }
+            else
+            {
+                Collider[] checkOffset = Physics.OverlapSphere(this.transform.position + direction, 0.1f);
+
+                foreach (Collider item in checkOffset)
+                {
+                    if (item.transform.position == this.transform.position) {
+                        offset = direction * offsetAmount * 0.5f;
+                    }
+                }
+            }
         }
-        return false;
+
+        return offset;
     }
 
     private IEnumerator Roll(Vector3 anchor, Vector3 axis)
@@ -50,7 +65,6 @@ public class PlayerController : MonoBehaviour
             yield return new WaitForSeconds(0.001f);
         }
         _isMoving = false;
-
-        Debug.Log("is alive: " + isAlive());
+        transform.position = transform.position.RoundedPos();
     }
 }

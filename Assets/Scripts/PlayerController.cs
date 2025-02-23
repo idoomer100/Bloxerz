@@ -20,7 +20,6 @@ public class PlayerController : MonoBehaviour
         void Assemble(Vector3 direction)
         {
             Vector3 anchor = transform.position + (Vector3.down + direction) * 0.5f + RollOffset(direction);
-            // Temporary movement- Only works for a cube.
             Vector3 axis = Vector3.Cross(Vector3.up, direction);
             StartCoroutine(Roll(anchor, axis));
         }
@@ -66,5 +65,7 @@ public class PlayerController : MonoBehaviour
         }
         _isMoving = false;
         transform.position = transform.position.RoundedPos();
+
+        // TODO: add actions workflow depending on whats below
     }
 }

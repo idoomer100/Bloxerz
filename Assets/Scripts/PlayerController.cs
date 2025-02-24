@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
 
     private bool _isMoving;
     private Vector3 _moveInput;
+    private Vector3 _moveDirection;
 
     private void Awake()
     {
@@ -33,6 +34,7 @@ public class PlayerController : MonoBehaviour
 
     private void StartMovement()
     {
+        _moveDirection = _moveInput;
         Vector3 anchor = transform.position + (Vector3.down + _moveInput) * 0.5f + RollOffset(_moveInput);
         Vector3 axis = Vector3.Cross(Vector3.up, _moveInput);
         StartCoroutine(Roll(anchor, axis));
@@ -124,10 +126,12 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if ((isYAligned && !steppedTiles.Any()) ||
-            (!isYAligned && steppedTiles.Count < _playerHeight * 0.5f + 0.01f))
+        bool inAir = !steppedTiles.Any();
+        bool notFullySupportedOnGround = steppedTiles.Count < _playerHeight * 0.5f + 0.01f;
+        if ((isYAligned && inAir) ||
+            (!isYAligned && notFullySupportedOnGround))
         {
-            Lose(fallDirection.normalized);
+            Lose(inAir ? -_moveDirection : fallDirection.EpsilonRound().normalized);
         }
     }
 
@@ -136,9 +140,29 @@ public class PlayerController : MonoBehaviour
         _rb.isKinematic = false;
 
         Vector3 rotationAxis = Vector3.Cross(fallDirection, Vector3.up).normalized;
+
+        FreezeRotationAxis(rotationAxis);
+
         _rb.AddTorque(rotationAxis * _fallTorqueForce, ForceMode.VelocityChange);
 
         _rb.AddForce(Vector3.down * _fallGravityForce, ForceMode.VelocityChange);
+    }
+
+    // Don't allow sideways rotation
+    private void FreezeRotationAxis(Vector3 rotationAxis)
+    {
+        if (rotationAxis.x != 0)
+        {
+            _rb.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
+        }
+        else if (rotationAxis.y != 0)
+        {
+            _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
+        else 
+        {
+            _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+        }
     }
 
     Vector3 GetSubblockWorldPosition(int index, int total)

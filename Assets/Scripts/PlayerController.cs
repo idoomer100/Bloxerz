@@ -7,12 +7,21 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private float _rollSpeed = 1;
+    private Rigidbody _rb;
+
+    [SerializeField] [Range(0.5f, 5f)] private float _rollSpeed = 1f;
+    [SerializeField] [Range(1f, 10f)] private float _fallTorqueForce = 5f;
+    [SerializeField] [Range(1f, 10f)] private float _fallGravityForce = 5f;
 
     private int _playerHeight = 2;
 
     private bool _isMoving;
     private Vector3 _moveInput;
+
+    private void Awake()
+    {
+        _rb = GetComponent<Rigidbody>();
+    }
 
     private void FixedUpdate()
     {
@@ -74,10 +83,12 @@ public class PlayerController : MonoBehaviour
             transform.RotateAround(anchor, axis, _rollSpeed);
             yield return new WaitForSeconds(0.001f);
         }
-        _isMoving = false;
         transform.position = transform.position.RoundedPos();
 
         CheckGround();
+
+        _isMoving = false;
+        //_rb.isKinematic = true;
     }
 
     private void CheckGround()
@@ -86,6 +97,7 @@ public class PlayerController : MonoBehaviour
 
         //List<Tile> steppedTiles = new List<Tiles>() TODO: Implement Tile Interface, detect them by this class and store them in this array.
         List<string> steppedTiles = new List<string>(); // Meanwhile that will do.
+        Vector3 fallDirection = Vector3.zero;
 
         if (isYAligned)
         {
@@ -99,11 +111,15 @@ public class PlayerController : MonoBehaviour
         {
             for (int i = 0; i < _playerHeight; i++)
             {
-                Vector3 worldPos = GetSubblockWorldPosition(i, _playerHeight);
-                string detectedTile = DetectTile(worldPos);
+                Vector3 TileCheckworldPos = GetSubblockWorldPosition(i, _playerHeight);
+                string detectedTile = DetectTile(TileCheckworldPos);
                 if (detectedTile != null)
                 {
                     steppedTiles.Add(detectedTile);
+                }
+                else
+                {
+                    fallDirection += new Vector3(transform.position.x - TileCheckworldPos.x, 0, transform.position.z - TileCheckworldPos.z);
                 }
             }
         }
@@ -111,15 +127,18 @@ public class PlayerController : MonoBehaviour
         if ((isYAligned && !steppedTiles.Any()) ||
             (!isYAligned && steppedTiles.Count < _playerHeight * 0.5f + 0.01f))
         {
-            Lose();
+            Lose(fallDirection.normalized);
         }
     }
 
-    private void Lose()
+    private void Lose(Vector3 fallDirection)
     {
-        print("YOU DIED!!!");
-        gameObject.active = false;
-        // TODO: Implement falling animations
+        _rb.isKinematic = false;
+
+        Vector3 rotationAxis = Vector3.Cross(fallDirection, Vector3.up).normalized;
+        _rb.AddTorque(rotationAxis * _fallTorqueForce, ForceMode.VelocityChange);
+
+        _rb.AddForce(Vector3.down * _fallGravityForce, ForceMode.VelocityChange);
     }
 
     Vector3 GetSubblockWorldPosition(int index, int total)

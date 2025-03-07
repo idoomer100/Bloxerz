@@ -7,22 +7,14 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    private Rigidbody _rb;
-
     [SerializeField] [Range(0.5f, 5f)] private float _rollSpeed = 1f;
-    [SerializeField] [Range(1f, 10f)] private float _fallTorqueForce = 5f;
-    [SerializeField] [Range(1f, 10f)] private float _fallGravityForce = 5f;
+    [SerializeField] [Range(1f, 5f)] private float _fallSpeed = 4;
 
     private int _playerHeight = 2;
 
     private bool _isMoving;
     private Vector3 _moveInput;
     private Vector3 _moveDirection;
-
-    private void Awake()
-    {
-        _rb = GetComponent<Rigidbody>();
-    }
 
     private void FixedUpdate()
     {
@@ -51,7 +43,7 @@ public class PlayerController : MonoBehaviour
     {
         Vector3 offset = Vector3.zero;
 
-        Ray ray = new Ray(this.transform.position.RoundedPos() + new Vector3(0.25f, 0.0f, 0.25f), Vector3.down);
+        Ray ray = new Ray(transform.position.RoundedPos() + new Vector3(0.25f, 0.0f, 0.25f), Vector3.down);
         RaycastHit hit;
 
         float offsetAmount = _playerHeight * 0.5f;
@@ -63,11 +55,11 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                Collider[] checkOffset = Physics.OverlapSphere(this.transform.position + direction, 0.1f);
+                Collider[] checkOffset = Physics.OverlapSphere(transform.position + direction, 0.1f);
 
                 foreach (Collider item in checkOffset)
                 {
-                    if (item.transform.position == this.transform.position) {
+                    if (item.transform.position == transform.position) {
                         offset = direction * offsetAmount * 0.5f;
                     }
                 }
@@ -87,10 +79,9 @@ public class PlayerController : MonoBehaviour
         }
         transform.position = transform.position.RoundedPos();
 
-        CheckGround();
-
         _isMoving = false;
-        //_rb.isKinematic = true;
+
+        CheckGround();
     }
 
     private void CheckGround()
@@ -131,37 +122,35 @@ public class PlayerController : MonoBehaviour
         if ((isYAligned && inAir) ||
             (!isYAligned && notFullySupportedOnGround))
         {
-            Lose(inAir ? -_moveDirection : fallDirection.EpsilonRound().normalized);
+            StartCoroutine(Lose(inAir ? -_moveDirection : fallDirection.EpsilonRound().normalized));
         }
     }
 
-    private void Lose(Vector3 fallDirection)
+    private IEnumerator Lose(Vector3 fallDirection)
     {
-        _rb.isKinematic = false;
+        bool firstFall = true;
 
-        Vector3 rotationAxis = Vector3.Cross(fallDirection, Vector3.up).normalized;
-
-        FreezeRotationAxis(rotationAxis);
-
-        _rb.AddTorque(rotationAxis * _fallTorqueForce, ForceMode.VelocityChange);
-
-        _rb.AddForce(Vector3.down * _fallGravityForce, ForceMode.VelocityChange);
-    }
-
-    // Don't allow sideways rotation
-    private void FreezeRotationAxis(Vector3 rotationAxis)
-    {
-        if (rotationAxis.x != 0)
+        while (true)
         {
-            _rb.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
-        }
-        else if (rotationAxis.y != 0)
-        {
-            _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        }
-        else 
-        {
-            _rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+            Vector3 axis = Vector3.Cross(fallDirection, Vector3.up).normalized;
+
+            Quaternion startRotation = transform.rotation;
+            Quaternion endRotation = Quaternion.AngleAxis(90, axis) * startRotation;
+            Vector3 startPosition = transform.position;
+            Vector3 endPosition = transform.position + Vector3.down;
+            if (firstFall)
+                endPosition -= fallDirection;
+
+            float time = 0;
+            while (time < 1)
+            {
+                time += Time.deltaTime * _fallSpeed;
+                transform.position = Vector3.Lerp(startPosition, endPosition, time);
+                transform.rotation = Quaternion.Lerp(startRotation, endRotation, time);
+                yield return null;
+            }
+
+            firstFall = false;
         }
     }
 

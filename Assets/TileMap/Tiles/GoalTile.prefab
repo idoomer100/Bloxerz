@@ -12,9 +12,9 @@ GameObject:
   - component: {fileID: 267770798875656011}
   - component: {fileID: 6600698521131731755}
   - component: {fileID: 292262475696531969}
-  - component: {fileID: -1818344413054367213}
+  - component: {fileID: 7229572993021679693}
   m_Layer: 0
-  m_Name: BasicTile
+  m_Name: GoalTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fba5b26638accce4383d5504a67e0172, type: 2}
+  - {fileID: 2100000, guid: 6bac4488e36cac44cb6890eb3db0622d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -109,7 +109,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 0.1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &-1818344413054367213
+--- !u!114 &7229572993021679693
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -118,6 +118,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 474581895085937465}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a4776b2c92eb584ebb86b3f92f50cef, type: 3}
+  m_Script: {fileID: 11500000, guid: 149cdfbd06b9ad14389591fa972a2af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

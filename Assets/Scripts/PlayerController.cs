@@ -88,16 +88,16 @@ public class PlayerController : MonoBehaviour
     {
         bool isYAligned = Mathf.Abs(transform.up.x) < 0.001f && Mathf.Abs(transform.up.z) < 0.001f;
 
-        //List<Tile> steppedTiles = new List<Tiles>() TODO: Implement Tile Interface, detect them by this class and store them in this array.
-        List<string> steppedTiles = new List<string>(); // Meanwhile that will do.
+        List<Tile> steppedTiles = new List<Tile>();
         Vector3 fallDirection = Vector3.zero;
 
         if (isYAligned)
         {
-            string detectedTile = DetectTile(GetLowestSubblockPosition());
+            Tile detectedTile = DetectTile(GetLowestSubblockPosition());
             if (detectedTile != null)
             {
                 steppedTiles.Add(detectedTile);
+                detectedTile.OnPlayerStand(transform);
             }
         }
         else
@@ -105,7 +105,7 @@ public class PlayerController : MonoBehaviour
             for (int i = 0; i < _playerHeight; i++)
             {
                 Vector3 TileCheckworldPos = GetSubblockWorldPosition(i, _playerHeight);
-                string detectedTile = DetectTile(TileCheckworldPos);
+                Tile detectedTile = DetectTile(TileCheckworldPos);
                 if (detectedTile != null)
                 {
                     steppedTiles.Add(detectedTile);
@@ -165,15 +165,13 @@ public class PlayerController : MonoBehaviour
         return transform.position + Vector3.down * (_playerHeight * 0.5f - 0.5f);
     }
 
-    // TODO: Change return type to Tile
-    string DetectTile(Vector3 origin)
+    Tile DetectTile(Vector3 origin)
     {
         RaycastHit hit;
         if (Physics.Raycast(origin, Vector3.down, out hit, 1))
         {
             Debug.DrawLine(origin, hit.point, Color.red);
-            return "tile";
-            // TODO: return different types of tiles.
+            return hit.collider.GetComponent<Tile>();
         }
 
         return null;

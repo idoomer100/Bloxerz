@@ -32,8 +32,20 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputValue value)
     {
         Vector2 input = value.Get<Vector2>();
+
         // Don't allow diagonal input, transform to Vector3
-        _moveInput = Mathf.Abs(input.x) > Mathf.Abs(input.y) ? new Vector3(input.x, 0, 0) : new Vector3(0, 0, input.y);
+        if (input.x != 0 && input.x != _moveInput.x)
+        {
+            _moveInput = new Vector3(input.x, 0, 0);
+        }
+        else if (input.y != 0 && input.y != _moveInput.y) 
+        {
+            _moveInput = new Vector3(0, 0, input.y);
+        }
+        else
+        {
+            _moveInput = Vector3.zero;
+        }
     }
 
     public void OnSwitch(InputValue value)

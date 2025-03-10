@@ -28,13 +28,18 @@ public class BloxerController : MonoBehaviour
 
     private IEnumerator Roll(Vector3 moveInput)
     {
-        _isMoving = true;
-
         float horizontalOffset = (Mathf.Abs(Vector3.Dot(transform.up, moveInput)) > 0.5f) ? _height / 2f : 0.5f;
         float verticalOffset = (Mathf.Abs(Vector3.Dot(transform.up, Vector3.up)) > 0.5f) ? _height / 2f : 0.5f;
         Vector3 pivot = transform.position + moveInput * horizontalOffset - Vector3.up * verticalOffset;
         Vector3 rollAxis = Vector3.Cross(Vector3.up, moveInput);
 
+        if (DetectCollision(moveInput, pivot))
+        {
+            print("ERRRR collision!");
+            yield break;
+        }
+
+        _isMoving = true;
 
         float rotatedAngle = 0f;
         while (rotatedAngle < 90f)
@@ -47,19 +52,35 @@ public class BloxerController : MonoBehaviour
             yield return null;
         }
 
+        RoundPositionToTile();
+
         CheckGround(moveInput);
 
         _isMoving = false;
     }
 
+    private bool IsStanding()
+    {
+        return Mathf.Abs(transform.up.x) < 0.001f && Mathf.Abs(transform.up.z) < 0.001f;
+    }
+
+    private void RoundPositionToTile()
+    {
+        transform.position = new Vector3(
+            Mathf.Round(transform.position.x * 2f) / 2f,
+            Mathf.Round(transform.position.y * 2f) / 2f + 0.05f,
+            Mathf.Round(transform.position.z * 2f) / 2f
+            );
+    }
+
     private void CheckGround(Vector3 moveInput)
     {
-        bool isYAligned = Mathf.Abs(transform.up.x) < 0.001f && Mathf.Abs(transform.up.z) < 0.001f;
-
         List<Tile> steppedTiles = new List<Tile>();
         Vector3 fallDirection = Vector3.zero;
 
-        if (isYAligned)
+        bool isStanding = IsStanding();
+
+        if (isStanding)
         {
             Tile detectedTile = DetectTile(GetLowestSubblockPosition());
             if (detectedTile != null)
@@ -90,8 +111,8 @@ public class BloxerController : MonoBehaviour
 
         bool inAir = !steppedTiles.Any();
         bool notFullySupportedOnGround = steppedTiles.Count < _height * 0.5f + 0.01f;
-        if ((isYAligned && inAir) ||
-            (!isYAligned && notFullySupportedOnGround))
+        if ((isStanding && inAir) ||
+            (!isStanding && notFullySupportedOnGround))
         {
             StartCoroutine(Fall(inAir ? -moveInput : fallDirection.EpsilonRound().normalized));
         }
@@ -147,5 +168,20 @@ public class BloxerController : MonoBehaviour
 
             firstFall = false;
         }
+    }
+
+    private bool DetectCollision(Vector3 direction, Vector3 offset)
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(offset + Vector3.up * 0.5f - direction * 0.01f,
+            direction,
+            out hit,
+            IsStanding() ? _height - 0.01f : 1 - 0.01f,
+            1 << gameObject.layer))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

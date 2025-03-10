@@ -3,17 +3,18 @@ using UnityEngine;
 
 public class ButtonTile : Tile
 {
-    [SerializeField] List<GateTile> gateTiles = new List<GateTile>();
+    [SerializeField] List<MovingTile> gateTiles = new List<MovingTile>();
+    [SerializeField] bool isSwitch = false;
 
     private bool pressed = false;
 
     public override void OnPlayerStand(Transform player)
     {
-        if (!pressed)
+        if (isSwitch || !pressed)
         {
             pressed = true;
 
-            foreach (GateTile gateTile in gateTiles)
+            foreach (MovingTile gateTile in gateTiles)
             {
                 gateTile.Open();
             }

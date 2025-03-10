@@ -1,10 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
-public class GateTile : Tile
+public class MovingTile : Tile
 {
     [SerializeField] Vector2Int moveAmount;
 
+    private bool moving = false;
+    private int state = 1;
+    
     public override void OnPlayerStand(Transform Player)
     {
         return;
@@ -12,15 +15,20 @@ public class GateTile : Tile
 
     public void Open()
     {
-        StartCoroutine(Move());
+        if (!moving)
+        {
+            StartCoroutine(Move());
+        }
     }
 
     const float MOVE_SPEED = 10;
 
     private IEnumerator Move()
     {
+        moving = true;
+
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = transform.position + new Vector3(moveAmount.x, 0, moveAmount.y);
+        Vector3 endPosition = transform.position + state * new Vector3(moveAmount.x, 0, moveAmount.y);
 
         RaycastHit hit;
         Transform detectedBloxer = null;
@@ -44,5 +52,8 @@ public class GateTile : Tile
             }
             yield return null;
         }
+
+        state = -state;
+        moving = false;
     }
 }

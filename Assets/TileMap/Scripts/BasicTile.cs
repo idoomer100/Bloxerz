@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class BasicTile : Tile
 {
-    public override void OnPlayerStand(Transform player)
+    public override void OnPlayerStand(Transform player, int height)
     {
         return;
     }

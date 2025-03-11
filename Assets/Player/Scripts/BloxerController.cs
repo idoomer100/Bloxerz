@@ -2,20 +2,21 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 public class BloxerController : MonoBehaviour
 {
     [HideInInspector] public float _rollSpeed = 1f;
     [HideInInspector] public float _fallSpeed = 4;
 
-    private int _height = 2;
-
     private bool _isMoving;
     bool _isFalling = false;
 
+    PlayerController _playerController;
+
     private void Start()
     {
-        _height = (int)transform.localScale.y;
+        _playerController = transform.parent.GetComponent<PlayerController>();
     }
 
     public void Move(Vector3 moveInput)
@@ -28,14 +29,13 @@ public class BloxerController : MonoBehaviour
 
     private IEnumerator Roll(Vector3 moveInput)
     {
-        float horizontalOffset = (Mathf.Abs(Vector3.Dot(transform.up, moveInput)) > 0.5f) ? _height / 2f : 0.5f;
-        float verticalOffset = (Mathf.Abs(Vector3.Dot(transform.up, Vector3.up)) > 0.5f) ? _height / 2f : 0.5f;
+        float horizontalOffset = (Mathf.Abs(Vector3.Dot(transform.up, moveInput)) > 0.5f) ? transform.localScale.y / 2f : 0.5f;
+        float verticalOffset = (Mathf.Abs(Vector3.Dot(transform.up, Vector3.up)) > 0.5f) ? transform.localScale.y / 2f : 0.5f;
         Vector3 pivot = transform.position + moveInput * horizontalOffset - Vector3.up * verticalOffset;
         Vector3 rollAxis = Vector3.Cross(Vector3.up, moveInput);
 
-        if (DetectCollision(moveInput, pivot))
+        if (DetectCollision(moveInput, pivot + Vector3.up * 0.5f) != null)
         {
-            print("ERRRR collision!");
             yield break;
         }
 
@@ -52,9 +52,11 @@ public class BloxerController : MonoBehaviour
             yield return null;
         }
 
-        RoundPositionToTile();
+        transform.position = transform.position.RoundPositionToTile();
 
         CheckGround(moveInput);
+
+        CheckMerge();
 
         _isMoving = false;
     }
@@ -62,15 +64,6 @@ public class BloxerController : MonoBehaviour
     private bool IsStanding()
     {
         return Mathf.Abs(transform.up.x) < 0.001f && Mathf.Abs(transform.up.z) < 0.001f;
-    }
-
-    private void RoundPositionToTile()
-    {
-        transform.position = new Vector3(
-            Mathf.Round(transform.position.x * 2f) / 2f,
-            Mathf.Round(transform.position.y * 2f) / 2f + 0.05f,
-            Mathf.Round(transform.position.z * 2f) / 2f
-            );
     }
 
     private void CheckGround(Vector3 moveInput)
@@ -86,17 +79,17 @@ public class BloxerController : MonoBehaviour
             if (detectedTile != null)
             {
                 steppedTiles.Add(detectedTile);
-                if (_height > 1)
+                if (transform.localScale.y > 1)
                 {
-                    detectedTile.OnPlayerStand(transform);
+                    detectedTile.OnPlayerStand(transform, (int)transform.localScale.y);
                 }
             }
         }
         else
         {
-            for (int i = 0; i < _height; i++)
+            for (int i = 0; i < transform.localScale.y; i++)
             {
-                Vector3 TileCheckworldPos = GetSubblockWorldPosition(i, _height);
+                Vector3 TileCheckworldPos = GetSubblockWorldPosition(i, (int)transform.localScale.y);
                 Tile detectedTile = DetectTile(TileCheckworldPos);
                 if (detectedTile != null)
                 {
@@ -110,7 +103,7 @@ public class BloxerController : MonoBehaviour
         }
 
         bool inAir = !steppedTiles.Any();
-        bool notFullySupportedOnGround = steppedTiles.Count < _height * 0.5f + 0.01f;
+        bool notFullySupportedOnGround = steppedTiles.Count < transform.localScale.y * 0.5f + 0.01f;
         if ((isStanding && inAir) ||
             (!isStanding && notFullySupportedOnGround))
         {
@@ -132,12 +125,12 @@ public class BloxerController : MonoBehaviour
     Vector3 GetSubblockWorldPosition(int index, int total)
     {
         float localYPos = (-(total - 1) * 0.5f) + index;
-        return transform.TransformPoint(new Vector3(0, localYPos / _height, 0));
+        return transform.TransformPoint(new Vector3(0, localYPos / transform.localScale.y, 0));
     }
 
     Vector3 GetLowestSubblockPosition()
     {
-        return transform.position + Vector3.down * (_height * 0.5f - 0.5f);
+        return transform.position + Vector3.down * (transform.localScale.y * 0.5f - 0.5f);
     }
 
     private IEnumerator Fall(Vector3 fallDirection)
@@ -170,18 +163,67 @@ public class BloxerController : MonoBehaviour
         }
     }
 
-    private bool DetectCollision(Vector3 direction, Vector3 offset)
+    private BloxerController DetectCollision(Vector3 direction, Vector3 offset)
     {
+        BloxerController hitBloxer = null;
+
         RaycastHit hit;
-        if (Physics.Raycast(offset + Vector3.up * 0.5f - direction * 0.01f,
+        if (Physics.Raycast(
+            offset - direction * 0.01f,
             direction,
             out hit,
-            IsStanding() ? _height - 0.01f : 1 - 0.01f,
+            IsStanding() ? transform.localScale.y - 0.01f : 1 - 0.01f,
             1 << gameObject.layer))
         {
-            return true;
+            if (hit.transform.TryGetComponent<BloxerController>(out hitBloxer))
+            {
+                return hitBloxer;
+            }
         }
 
-        return false;
+        return hitBloxer;
+    }
+
+    private void CheckMerge()
+    {
+        if (transform.localScale.y == 2)
+        {
+            if (!IsStanding())
+            {
+                BloxerController hitBloxer1 = DetectCollision(transform.up, transform.position + transform.up * transform.localScale.y * 0.5f);
+
+                if (hitBloxer1 != null && hitBloxer1.transform.localScale.y == 1)
+                {
+                    _playerController.MergeBloxerz(this, hitBloxer1);
+                }
+                else 
+                {
+                    BloxerController hitBloxer2 = DetectCollision(-transform.up, transform.position - transform.up * transform.localScale.y * 0.5f);
+                    if (hitBloxer2 != null && hitBloxer2.transform.localScale.y == 1)
+                    {
+                        _playerController.MergeBloxerz(this, hitBloxer2);
+                    }
+                }
+            }
+        }
+        else if (transform.localScale.y == 1)
+        {
+            Vector3[] directions = new Vector3[4] { Vector3.right, Vector3.left, Vector3.forward, Vector3.back };
+
+            for (int i = 0; i < 4; i++)
+            {
+                BloxerController hitBloxer = DetectCollision(directions[i], transform.position + directions[i] * 0.5f);
+
+                if (hitBloxer != null)
+                {
+                    if (hitBloxer.transform.localScale.y == 1 || Mathf.Abs(Vector3.Dot(directions[i], hitBloxer.transform.up)) > 0.9f)
+                    {
+                        _playerController.MergeBloxerz(this, hitBloxer);
+                        break;
+                    }
+                }
+            }
+            
+        }
     }
 }

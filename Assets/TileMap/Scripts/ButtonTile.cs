@@ -8,7 +8,7 @@ public class ButtonTile : Tile
 
     private bool pressed = false;
 
-    public override void OnPlayerStand(Transform player)
+    public override void OnPlayerStand(Transform player, int height)
     {
         if (isSwitch || !pressed)
         {

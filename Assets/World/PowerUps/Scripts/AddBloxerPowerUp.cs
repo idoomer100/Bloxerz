@@ -1,36 +1,28 @@
 using UnityEngine;
 
-public class AddBloxerPowerUp : MonoBehaviour
+public class AddBloxerPowerUp : PowerUp
 {
-    private void OnTriggerStay(Collider other)
+    public override void ApplyPowerUp()
     {
-        if (other.gameObject.layer == LayerMask.NameToLayer("Bloxer"))
+        if (bloxer.localScale.y == 1)
         {
-            Transform bloxer = other.transform;
+            bloxer.rotation = Quaternion.identity;
+            bloxer.localScale = new Vector3(1, 2, 1);
+            bloxer.position = bloxer.position + Vector3.up * 0.5f;
 
-            if (bloxer.rotation.IsRotationAt90DegreeSteps())
-            {
-                if (bloxer.localScale.y == 1)
-                {
-                    bloxer.rotation = Quaternion.identity;
-                    bloxer.localScale = new Vector3(1, 2, 1);
-                    bloxer.position = bloxer.position + Vector3.up * 0.5f;
+            Destroy(gameObject);
+        }
+        else if (bloxer.localScale.y == 2)
+        {
+            bloxer.localScale = new Vector3(1, 3, 1);
 
-                    Destroy(gameObject);
-                }
-                else if (bloxer.localScale.y == 2)
-                {
-                    bloxer.localScale = new Vector3(1, 3, 1);
+            Vector3 addDirection = transform.position - bloxer.position;
+            addDirection.y = 0;
+            addDirection.Normalize();
 
-                    Vector3 addDirection = transform.position - bloxer.position;
-                    addDirection.y = 0;
-                    addDirection.Normalize();
+            bloxer.position = bloxer.position + addDirection * 0.5f;
 
-                    bloxer.position = bloxer.position + addDirection * 0.5f;
-
-                    Destroy(gameObject);
-                }
-            }
+            Destroy(gameObject);
         }
     }
 }

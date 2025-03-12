@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 292262475696531969}
   - component: {fileID: -7748793329920782528}
   m_Layer: 0
-  m_Name: GateTile
+  m_Name: MovingTile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

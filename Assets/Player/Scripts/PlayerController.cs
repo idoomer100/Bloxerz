@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] [Range(100f, 300f)] private float _rollSpeed = 3f;
     [SerializeField] [Range(1f, 5f)] private float _fallSpeed = 4;
+    [SerializeField] [Range(1f, 10f)] private float _slideSpeed = 4;
 
     BloxerController[] bloxerz;
 
@@ -36,6 +37,7 @@ public class PlayerController : MonoBehaviour
         {
             bloxer._rollSpeed = _rollSpeed;
             bloxer._fallSpeed = _fallSpeed;
+            bloxer._slideSpeed = _slideSpeed;
         }
         
         activeBloxer = 0;

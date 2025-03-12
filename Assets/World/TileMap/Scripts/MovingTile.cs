@@ -38,7 +38,7 @@ public class MovingTile : Tile
         {
             detectedBloxer = hit.transform;
             bloxerStartPosition = detectedBloxer.position;
-            bloxerEndPosition = detectedBloxer.position + new Vector3(moveAmount.x, 0, moveAmount.y);
+            bloxerEndPosition = detectedBloxer.position + state * new Vector3(moveAmount.x, 0, moveAmount.y);
         }
 
         float time = 0;

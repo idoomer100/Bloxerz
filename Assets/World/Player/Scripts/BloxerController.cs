@@ -9,9 +9,16 @@ public class BloxerController : MonoBehaviour
     [HideInInspector] public float _rollSpeed = 1f;
     [HideInInspector] public float _fallSpeed = 4;
     [HideInInspector] public float _slideSpeed = 4;
+    enum BloxerState
+    {
+        IDLE,
+        MOVING,
+        FALLING,
+        SLIDING
+    }
+    private BloxerState _state;
 
-    private bool _isMoving;
-    bool _isFalling = false;
+    
 
     PlayerController _playerController;
 
@@ -22,7 +29,7 @@ public class BloxerController : MonoBehaviour
 
     public void Move(Vector3 moveInput)
     {
-        if (!_isMoving && !_isFalling)
+        if (_state == BloxerState.IDLE)
         {
             StartCoroutine(Roll(moveInput));
         }
@@ -40,7 +47,7 @@ public class BloxerController : MonoBehaviour
             yield break;
         }
 
-        _isMoving = true;
+        _state = BloxerState.MOVING;
 
         float rotatedAngle = 0f;
         while (rotatedAngle < 90f)
@@ -58,8 +65,6 @@ public class BloxerController : MonoBehaviour
         CheckGround(moveInput);
 
         CheckMerge();
-
-        _isMoving = false;
     }
 
     private bool IsStanding()
@@ -114,12 +119,18 @@ public class BloxerController : MonoBehaviour
         {
             StartCoroutine(Slide(moveInput));
         }
+        else
+        {
+            _state = BloxerState.IDLE;
+        }
         
     }
 
     private IEnumerator Slide(Vector3 moveInput)
     {
-        yield return null;
+        yield return null; // Finish movement
+
+        _state = BloxerState.SLIDING;
 
         Vector3 startPosition = transform.position;
         Vector3 endPosition = transform.position + moveInput;
@@ -161,7 +172,7 @@ public class BloxerController : MonoBehaviour
 
     private IEnumerator Fall(Vector3 fallDirection)
     {
-        _isFalling = true;
+        _state = BloxerState.FALLING;
 
         bool firstFall = true;
 

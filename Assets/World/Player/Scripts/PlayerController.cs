@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,11 +14,20 @@ public class PlayerController : MonoBehaviour
 
     BloxerController[] bloxerz;
 
+    CinemachineCamera camera;
+
     private Vector3 _moveInput;
     private int activeBloxer;
 
     private void Start()
     {
+        CinemachineBrain brain = CinemachineBrain.GetActiveBrain(0);
+
+        if (brain != null && brain.ActiveVirtualCamera is CinemachineCamera camera)
+        {
+            this.camera = camera;
+        }
+
         DetectBloxers();
     }
 
@@ -51,6 +61,8 @@ public class PlayerController : MonoBehaviour
         }
 
         activeBloxer = 0;
+
+        camera.Follow = bloxerz[activeBloxer].transform;
     }
 
     public void OnMove(InputValue value)
@@ -84,15 +96,20 @@ public class PlayerController : MonoBehaviour
         {
             activeBloxer = 0;
         }
+
+        camera.Follow = bloxerz[activeBloxer].transform;
     }
 
     private void ActivateBloxer(BloxerController bloxer)
     {
-        int tries = 4;
-        while (!ReferenceEquals(bloxerz[activeBloxer], bloxer) && tries > 0)
+        for (int i = 0; i < bloxerz.Length; i++)
         {
+            if (ReferenceEquals(bloxerz[activeBloxer], bloxer))
+            {
+                return;
+            }
+            
             SwitchActiveBloxer();
-            tries--;
         }
     }
 

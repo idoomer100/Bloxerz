@@ -25,21 +25,31 @@ public class PlayerController : MonoBehaviour
     {
         if (_moveInput != Vector3.zero)
         {
-            bloxerz[activeBloxer].Move(_moveInput);
+            if(bloxerz[activeBloxer] != null)
+            {
+                bloxerz[activeBloxer].Move(_moveInput);
+            }
         }
     }
 
     public void DetectBloxers()
     {
+        StartCoroutine(StartDetectBloxers());
+    }
+
+    public IEnumerator StartDetectBloxers()
+    {
+        yield return null;
+
         bloxerz = GetComponentsInChildren<BloxerController>();
-        
+
         foreach (BloxerController bloxer in bloxerz)
         {
             bloxer._rollSpeed = _rollSpeed;
             bloxer._fallSpeed = _fallSpeed;
             bloxer._slideSpeed = _slideSpeed;
         }
-        
+
         activeBloxer = 0;
     }
 
@@ -86,12 +96,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void MergeBloxerz(BloxerController bloxer1ToMerge, BloxerController bloxer2ToMerge)
-    {
-        StartCoroutine(MergeBloxerz(bloxer1ToMerge.transform, bloxer2ToMerge.transform));
-    }
-
-    private IEnumerator MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
+    public void MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
     {
         Vector3 distancesDirection = (bloxer2ToMerge.position - bloxer1ToMerge.position).normalized;
         
@@ -107,11 +112,14 @@ public class PlayerController : MonoBehaviour
         
         Destroy(bloxer1ToMerge.gameObject);
         Destroy(bloxer2ToMerge.gameObject);
-        
-        yield return null;
-        
+                
         DetectBloxers();
 
         ActivateBloxer(spawnedBloxer.GetComponent<BloxerController>());
+    }
+
+    public void SpawnBloxer(Vector3 spawnLocation)
+    {
+        Instantiate(bloxer1, spawnLocation, Quaternion.identity, transform);
     }
 }

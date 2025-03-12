@@ -8,6 +8,7 @@ public class BloxerController : MonoBehaviour
 {
     [HideInInspector] public float _rollSpeed = 1f;
     [HideInInspector] public float _fallSpeed = 4;
+    [HideInInspector] public float _slideSpeed = 4;
 
     private bool _isMoving;
     bool _isFalling = false;
@@ -109,6 +110,31 @@ public class BloxerController : MonoBehaviour
         {
             StartCoroutine(Fall(inAir ? -moveInput : fallDirection.EpsilonRound().normalized));
         }
+        else if (steppedTiles.All(tile => tile is IceTile))
+        {
+            StartCoroutine(Slide(moveInput));
+        }
+        
+    }
+
+    private IEnumerator Slide(Vector3 moveInput)
+    {
+        yield return null;
+
+        Vector3 startPosition = transform.position;
+        Vector3 endPosition = transform.position + moveInput;
+
+        float time = 0;
+        while (time < 1)
+        {
+            time += Time.deltaTime * _slideSpeed;
+            transform.position = Vector3.Lerp(startPosition, endPosition, time);
+            yield return null;
+        }
+
+        transform.position = endPosition;
+
+        CheckGround(moveInput);
     }
 
     Tile DetectTile(Vector3 origin)

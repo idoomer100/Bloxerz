@@ -10,28 +10,21 @@ public class SplitTile : Tile
 
     public override void OnPlayerStand(Transform player, int height)
     {
-        StartCoroutine(SplitBloxer(player, height));
-    }
-
-    private IEnumerator SplitBloxer(Transform player, int height)
-    {
-        InstansiateBloxer(player, spawnLocation1);
-        InstansiateBloxer(player, spawnLocation2);
-        if (height == 3)
-        {
-            InstansiateBloxer(player, spawnLocation3);
-        }
-
         PlayerController playerController = player.parent.GetComponent<PlayerController>();
 
-        Destroy(player.gameObject);
+        InstansiateBloxer(playerController, spawnLocation1);
+        InstansiateBloxer(playerController, spawnLocation2);
+        if (height == 3)
+        {
+            InstansiateBloxer(playerController, spawnLocation3);
+        }
 
-        yield return null;
+        Destroy(player.gameObject);
 
         playerController.DetectBloxers();
     }
 
-    private void InstansiateBloxer(Transform player, Vector3 spawnLocation)
+    private void InstansiateBloxer(PlayerController player, Vector3 spawnLocation)
     {
         // If there is already cube in the spawn location, increase it's height by 1
         RaycastHit hit;
@@ -43,7 +36,7 @@ public class SplitTile : Tile
         }
         else
         {
-            Instantiate(bloxer1, spawnLocation, Quaternion.identity, player.parent);
+            player.SpawnBloxer(spawnLocation);
         }
     }
 }

@@ -220,14 +220,14 @@ public class BloxerController : MonoBehaviour
 
                 if (hitBloxer1 != null && hitBloxer1.transform.localScale.y == 1)
                 {
-                    _playerController.MergeBloxerz(this, hitBloxer1);
+                    _playerController.MergeBloxerz(transform, hitBloxer1.transform);
                 }
                 else 
                 {
                     BloxerController hitBloxer2 = DetectCollision(-transform.up, transform.position - transform.up * transform.localScale.y * 0.5f);
                     if (hitBloxer2 != null && hitBloxer2.transform.localScale.y == 1)
                     {
-                        _playerController.MergeBloxerz(this, hitBloxer2);
+                        _playerController.MergeBloxerz(transform, hitBloxer2.transform);
                     }
                 }
             }
@@ -244,7 +244,7 @@ public class BloxerController : MonoBehaviour
                 {
                     if (hitBloxer.transform.localScale.y == 1 || Mathf.Abs(Vector3.Dot(directions[i], hitBloxer.transform.up)) > 0.9f)
                     {
-                        _playerController.MergeBloxerz(this, hitBloxer);
+                        _playerController.MergeBloxerz(transform, hitBloxer.transform);
                         break;
                     }
                 }

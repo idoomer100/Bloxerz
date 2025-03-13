@@ -9,6 +9,7 @@ public class BloxerController : MonoBehaviour
     [HideInInspector] public float _rollSpeed = 1f;
     [HideInInspector] public float _fallSpeed = 4;
     [HideInInspector] public float _slideSpeed = 4;
+
     enum BloxerState
     {
         IDLE,
@@ -18,13 +19,13 @@ public class BloxerController : MonoBehaviour
     }
     private BloxerState _state;
 
-    
-
     PlayerController _playerController;
 
     private void Start()
     {
         _playerController = transform.parent.GetComponent<PlayerController>();
+
+        CheckGround(Vector3.zero);
     }
 
     public void Move(Vector3 moveInput)
@@ -145,13 +146,15 @@ public class BloxerController : MonoBehaviour
 
         transform.position = endPosition;
 
+        CheckMerge();
+
         CheckGround(moveInput);
     }
 
     Tile DetectTile(Vector3 origin)
     {
         RaycastHit hit;
-        if (Physics.Raycast(origin, Vector3.down, out hit, 1))
+        if (Physics.Raycast(origin, Vector3.down, out hit, 2))
         {
             return hit.collider.GetComponent<Tile>();
         }
@@ -187,12 +190,14 @@ public class BloxerController : MonoBehaviour
             if (firstFall)
                 endPosition -= fallDirection;
 
-            float time = 0;
-            while (time < 1)
+            float spinFallTime = 0;
+
+            while (spinFallTime < 1)
             {
-                time += Time.deltaTime * _fallSpeed;
-                transform.position = Vector3.Lerp(startPosition, endPosition, time);
-                transform.rotation = Quaternion.Lerp(startRotation, endRotation, time);
+                spinFallTime += Time.deltaTime * _fallSpeed;
+
+                transform.position = Vector3.Lerp(startPosition, endPosition, spinFallTime);
+                transform.rotation = Quaternion.Lerp(startRotation, endRotation, spinFallTime);
                 yield return null;
             }
 

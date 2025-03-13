@@ -11,7 +11,7 @@ public class RemoveBloxerPowerUp : PowerUp
         if (bloxer.localScale.y == 1)
         {
             Destroy(bloxer.gameObject);
-            playerController.DetectBloxers();
+            playerController.ScheduleBloxerzDetection();
         }
         else
         {
@@ -30,7 +30,7 @@ public class RemoveBloxerPowerUp : PowerUp
 
                 Destroy(bloxer.gameObject);
 
-                playerController.DetectBloxers();
+                playerController.ScheduleBloxerzDetection();
             }
             // Else, height is 2 or 3 so just change height and offset accordingly.
             else

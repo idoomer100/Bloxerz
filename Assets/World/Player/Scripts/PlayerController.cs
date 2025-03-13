@@ -14,25 +14,33 @@ public class PlayerController : MonoBehaviour
 
     BloxerController[] bloxerz;
 
-    CinemachineCamera camera;
+    CinemachineCamera cmCamera;
 
     private Vector3 _moveInput;
     private int activeBloxer;
+
+    private bool needToDetect = false;
+    private BloxerController lastSpawnedBloxer = null;
 
     private void Start()
     {
         CinemachineBrain brain = CinemachineBrain.GetActiveBrain(0);
 
-        if (brain != null && brain.ActiveVirtualCamera is CinemachineCamera camera)
+        if (brain != null && brain.ActiveVirtualCamera is CinemachineCamera cmCamera)
         {
-            this.camera = camera;
+            this.cmCamera = cmCamera;
         }
 
-        DetectBloxers();
+        ScheduleBloxerzDetection();
     }
 
     private void FixedUpdate()
     {
+        if (needToDetect)
+        {
+            DetectBloxerz();
+        }
+
         if (_moveInput != Vector3.zero)
         {
             if(bloxerz[activeBloxer] != null)
@@ -42,27 +50,41 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void DetectBloxers()
+    public void ScheduleBloxerzDetection()
     {
-        StartCoroutine(StartDetectBloxers());
+        needToDetect = true;
     }
 
-    public IEnumerator StartDetectBloxers()
+    public void DetectBloxerz()
     {
-        yield return null;
-
         bloxerz = GetComponentsInChildren<BloxerController>();
-
-        foreach (BloxerController bloxer in bloxerz)
-        {
-            bloxer._rollSpeed = _rollSpeed;
-            bloxer._fallSpeed = _fallSpeed;
-            bloxer._slideSpeed = _slideSpeed;
-        }
 
         activeBloxer = 0;
 
-        camera.Follow = bloxerz[activeBloxer].transform;
+        for (int i = 0; i < bloxerz.Length; i++)
+        {
+            SetBloxerParameters(bloxerz[i]);
+
+            if (lastSpawnedBloxer != null)
+            {
+                if (bloxerz[i] == lastSpawnedBloxer)
+                {
+                    activeBloxer = i;
+                    lastSpawnedBloxer = null;
+                }
+            }
+        }
+
+        cmCamera.Follow = bloxerz[activeBloxer].transform;
+
+        needToDetect = false;
+    }
+
+    public void SetBloxerParameters(BloxerController bloxer)
+    {
+        bloxer._rollSpeed = _rollSpeed;
+        bloxer._fallSpeed = _fallSpeed;
+        bloxer._slideSpeed = _slideSpeed;
     }
 
     public void OnMove(InputValue value)
@@ -97,20 +119,7 @@ public class PlayerController : MonoBehaviour
             activeBloxer = 0;
         }
 
-        camera.Follow = bloxerz[activeBloxer].transform;
-    }
-
-    private void ActivateBloxer(BloxerController bloxer)
-    {
-        for (int i = 0; i < bloxerz.Length; i++)
-        {
-            if (ReferenceEquals(bloxerz[activeBloxer], bloxer))
-            {
-                return;
-            }
-            
-            SwitchActiveBloxer();
-        }
+        cmCamera.Follow = bloxerz[activeBloxer].transform;
     }
 
     public void MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
@@ -123,20 +132,27 @@ public class PlayerController : MonoBehaviour
         
         Quaternion rotation = Quaternion.Euler(new Vector3(distancesDirection.z * 90, 0, distancesDirection.x * 90));
 
-        GameObject spawnedBloxer = Instantiate(bloxer1, spawnPosition, rotation, transform);
+        BloxerController spawnedBloxer = SpawnBloxer(spawnPosition, rotation);
         
         spawnedBloxer.transform.localScale = new Vector3(1, height, 1);
         
         Destroy(bloxer1ToMerge.gameObject);
         Destroy(bloxer2ToMerge.gameObject);
-                
-        DetectBloxers();
 
-        ActivateBloxer(spawnedBloxer.GetComponent<BloxerController>());
+        ScheduleBloxerzDetection();
     }
 
-    public void SpawnBloxer(Vector3 spawnLocation)
+    public BloxerController SpawnBloxer(Vector3 spawnLocation)
     {
-        Instantiate(bloxer1, spawnLocation, Quaternion.identity, transform);
+        return SpawnBloxer(spawnLocation, Quaternion.identity);
+    }
+
+    public BloxerController SpawnBloxer(Vector3 spawnLocation, Quaternion rotation)
+    {
+        GameObject spawnedBloxer = Instantiate(bloxer1, spawnLocation, rotation, transform);
+
+        lastSpawnedBloxer = spawnedBloxer.transform.GetComponent<BloxerController>();
+
+        return lastSpawnedBloxer;
     }
 }

@@ -6,18 +6,39 @@ public class ButtonTile : Tile
     [SerializeField] List<MovingTile> gateTiles = new List<MovingTile>();
     [SerializeField] bool isSwitch = false;
 
-    private bool pressed = false;
+    bool pressed = false;
 
-    public override void OnPlayerStand(Transform player, int height)
+    private void OpenGates()
     {
-        if (isSwitch || !pressed)
+        foreach (MovingTile gateTile in gateTiles)
+        {
+            gateTile.Open();
+        }
+    }
+
+    public override void OnPlayerStand(Transform bloxer, int height)
+    {
+        if (!isSwitch && !pressed)
         {
             pressed = true;
 
-            foreach (MovingTile gateTile in gateTiles)
-            {
-                gateTile.Open();
-            }
+            OpenGates();
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (isSwitch)
+        {
+            OpenGates();
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (isSwitch)
+        {
+            OpenGates();
         }
     }
 }

@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class FallingTile : Tile
 {
-    public override void OnPlayerStand(Transform player, int height)
+    public override void OnPlayerStand(Transform bloxer, int height)
     {
-        StartCoroutine(Fall(player));
+        StartCoroutine(Fall(bloxer));
         print("you lose!!"); //TODO: LOSE;
     }
 

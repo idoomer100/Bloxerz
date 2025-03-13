@@ -8,7 +8,7 @@ public class MovingTile : Tile
     private bool moving = false;
     private int state = 1;
     
-    public override void OnPlayerStand(Transform Player, int height)
+    public override void OnPlayerStand(Transform bloxer, int height)
     {
         return;
     }

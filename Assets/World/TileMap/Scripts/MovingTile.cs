@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
 public class MovingTile : Tile
 {
-    [SerializeField] Vector2Int moveAmount;
+    [SerializeField] [Tooltip("Diagonal Movement is not recommended (x xor y).")] Vector2Int moveAmount;
+    [SerializeField] [Range(0,10)] float moveSpeed = 3;
 
     private bool moving = false;
     private int state = 1;
@@ -21,39 +23,68 @@ public class MovingTile : Tile
         }
     }
 
-    const float MOVE_SPEED = 10;
-
     private IEnumerator Move()
     {
         moving = true;
 
-        Vector3 startPosition = transform.position;
-        Vector3 endPosition = transform.position + state * new Vector3(moveAmount.x, 0, moveAmount.y);
-
-        RaycastHit hit;
-        Transform detectedBloxer = null;
-        Vector3 bloxerStartPosition = Vector3.zero;
-        Vector3 bloxerEndPosition = Vector3.zero;
-        if (Physics.Raycast(transform.position, Vector3.up, out hit, 1))
+        Movable movable = DetectPassanger();
+        if (movable != null)
         {
-            detectedBloxer = hit.transform;
-            bloxerStartPosition = detectedBloxer.position;
-            bloxerEndPosition = detectedBloxer.position + state * new Vector3(moveAmount.x, 0, moveAmount.y);
+            movable.state = MovableState.PUSHED;
         }
 
-        float time = 0;
-        while (time < 1)
+        Vector3 endPosition = transform.position + state * new Vector3(moveAmount.x, 0, moveAmount.y);
+
+        while (Vector3.Distance(transform.position, endPosition) > 0.1f)
         {
-            time += Time.deltaTime * MOVE_SPEED;
-            transform.position = Vector3.Lerp(startPosition, endPosition, time);
-            if (detectedBloxer != null)
+            Vector3 stepStartPosition = transform.position;
+            Vector3 stepEndPosition = transform.position + state * new Vector3(Math.Sign(moveAmount.x), 0, Math.Sign(moveAmount.y));
+            Vector3 movableStepStartPosition = Vector3.zero;
+            Vector3 movableStepEndPosition = Vector3.zero;
+
+            if (movable != null)
             {
-                detectedBloxer.position = Vector3.Lerp(bloxerStartPosition, bloxerEndPosition, time);
+                movableStepStartPosition = movable.transform.position;
+                movableStepEndPosition = movable.transform.position + state * new Vector3(Math.Sign(moveAmount.x), 0, Math.Sign(moveAmount.y));
             }
-            yield return null;
+         
+            float time = 0;
+            while (time < 1)
+            {
+                time += Time.deltaTime * moveSpeed;
+
+                transform.position = Vector3.Lerp(stepStartPosition, stepEndPosition, time);
+
+                if (movable != null)
+                {
+                    movable.transform.position = Vector3.Lerp(movableStepStartPosition, movableStepEndPosition, time);
+                }
+
+                yield return null;
+            }
+
+            if (movable is BloxerController)
+            {
+                BloxerController bloxer = (BloxerController)movable;
+                bloxer = bloxer.HandleMerge();
+                movable = bloxer;
+                bloxer.CheckGround(Vector3.zero);
+            }
         }
 
         state = -state;
         moving = false;
+    }
+
+    private Movable DetectPassanger()
+    {
+        RaycastHit hit;
+        Movable movable = null;
+        if (Physics.Raycast(transform.position, Vector3.up, out hit, 1))
+        {
+            hit.transform.TryGetComponent<Movable>(out movable);
+        }
+
+        return movable;
     }
 }

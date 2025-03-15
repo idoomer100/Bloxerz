@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 63790374066679884}
   - component: {fileID: -8308284036070857463}
   - component: {fileID: -3469400133905512560}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Add Bloxer
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -30,4 +30,10 @@ public static class Extensions
 
         return isXValid && isYValid && isZValid;
     }
+
+    public static bool IsSnappedToGrid(this Vector3 vector)
+    {
+        Vector3 roundedVector = vector.RoundPositionToTile();
+        return Vector3.Distance(vector, roundedVector) < 0.3f;
+    }
 }

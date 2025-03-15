@@ -6,11 +6,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] GameObject bloxer1;
-
-    [SerializeField] [Range(100f, 300f)] private float _rollSpeed = 3f;
-    [SerializeField] [Range(1f, 5f)] private float _fallSpeed = 4;
-    [SerializeField] [Range(1f, 10f)] private float _slideSpeed = 4;
+    [SerializeField] GameObject bloxerPrefab;
 
     BloxerController[] bloxerz;
 
@@ -63,8 +59,6 @@ public class PlayerController : MonoBehaviour
 
         for (int i = 0; i < bloxerz.Length; i++)
         {
-            SetBloxerParameters(bloxerz[i]);
-
             if (lastSpawnedBloxer != null)
             {
                 if (bloxerz[i] == lastSpawnedBloxer)
@@ -78,13 +72,6 @@ public class PlayerController : MonoBehaviour
         cmCamera.Follow = bloxerz[activeBloxer].transform;
 
         needToDetect = false;
-    }
-
-    public void SetBloxerParameters(BloxerController bloxer)
-    {
-        bloxer._rollSpeed = _rollSpeed;
-        bloxer._fallSpeed = _fallSpeed;
-        bloxer._slideSpeed = _slideSpeed;
     }
 
     public void OnMove(InputValue value)
@@ -122,7 +109,7 @@ public class PlayerController : MonoBehaviour
         cmCamera.Follow = bloxerz[activeBloxer].transform;
     }
 
-    public void MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
+    public BloxerController MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
     {
         Vector3 distancesDirection = (bloxer2ToMerge.position - bloxer1ToMerge.position).normalized;
         
@@ -140,6 +127,8 @@ public class PlayerController : MonoBehaviour
         Destroy(bloxer2ToMerge.gameObject);
 
         ScheduleBloxerzDetection();
+
+        return spawnedBloxer;
     }
 
     public BloxerController SpawnBloxer(Vector3 spawnLocation)
@@ -149,7 +138,7 @@ public class PlayerController : MonoBehaviour
 
     public BloxerController SpawnBloxer(Vector3 spawnLocation, Quaternion rotation)
     {
-        GameObject spawnedBloxer = Instantiate(bloxer1, spawnLocation, rotation, transform);
+        GameObject spawnedBloxer = Instantiate(bloxerPrefab, spawnLocation, rotation, transform);
 
         lastSpawnedBloxer = spawnedBloxer.transform.GetComponent<BloxerController>();
 

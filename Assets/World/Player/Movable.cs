@@ -20,19 +20,39 @@ public class Movable : MonoBehaviour
 
         if (depth > 4) return (pushList, totalMass);
 
-
-        Vector3 offset = direction * 0.5f;
-        if (pushingObject.IsGoingToStand(direction))
+        if (depth == 0 && transform.localScale.y > 1)
         {
-            offset += direction * 0.5f * (pushingObject.transform.localScale.y - 1);
+            if (pushingObject.IsGoingToStand(direction))
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(pushingObject.transform.position,
+                    direction,
+                    out hit,
+                    transform.localScale.y / 2 + 0.5f,
+                    collisionLayer))
+                {
+                    return (pushList, 100);
+                }
+                return (pushList, totalMass);
+            }
+            if (pushingObject.IsStanding())
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(pushingObject.transform.position - Vector3.up * (transform.localScale.y / 2 - 0.5f),
+                    direction,
+                    out hit,
+                    transform.localScale.y,
+                    collisionLayer))
+                {
+                    return (pushList, 100);
+                }
+                return (pushList, totalMass);
+            }
         }
-        if (pushingObject.IsStanding() && state == MovableState.ROLLING)
-        {
-            offset += direction * (pushingObject.transform.localScale.y - 1);
-        }
-
+        
+ 
         Collider[] hits = Physics.OverlapBox(
-            pushingObject.transform.position + offset,
+            pushingObject.transform.position + direction * 0.5f,
             pushingObject.transform.localScale / 2 - new Vector3(0.1f, 0.1f, 0.1f),
             pushingObject.transform.rotation,
             collisionLayer);
@@ -42,7 +62,6 @@ public class Movable : MonoBehaviour
             Movable m = col.GetComponent<Movable>();
             if (col != null && m == null)
             {
-                print(col.name);
                 // Hit a wall
                 return (pushList, 100);
             }
@@ -120,15 +139,15 @@ public class Movable : MonoBehaviour
         {
             for (int i = 0; i < transform.localScale.y; i++)
             {
-                Vector3 TileCheckworldPos = GetSubblockWorldPosition(i, (int)transform.localScale.y);
-                Tile detectedTile = DetectTile(TileCheckworldPos);
+                Vector3 tileCheckworldPos = GetSubblockWorldPosition(i, (int)transform.localScale.y);
+                Tile detectedTile = DetectTile(tileCheckworldPos);
                 if (detectedTile != null)
                 {
                     steppedTiles.Add(detectedTile);
                 }
                 else
                 {
-                    fallDirection += new Vector3(transform.position.x - TileCheckworldPos.x, 0, transform.position.z - TileCheckworldPos.z);
+                    fallDirection += new Vector3(transform.position.x - tileCheckworldPos.x, 0, transform.position.z - tileCheckworldPos.z);
                 }
             }
         }
@@ -137,6 +156,7 @@ public class Movable : MonoBehaviour
         bool notFullySupportedByGround = steppedTiles.Count < transform.localScale.y * 0.5f + 0.01f;
         // If height=3 and lying on the ground where only 1 tile is directly below it's, is supported and shouldn't fall:
         notFullySupportedByGround &= !(transform.localScale.y == 3 && 
+            steppedTiles.Count == 1 &&
             Vector2.Distance(
                 new Vector2(transform.position.x, transform.position.z),
                 new Vector2(steppedTiles[0].transform.position.x, steppedTiles[0].transform.position.z)

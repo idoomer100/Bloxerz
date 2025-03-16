@@ -33,7 +33,6 @@ public class BloxerController : Movable
         Vector3 rollAxis = Vector3.Cross(Vector3.up, moveInput);
 
         (List<Movable> pushables, int pushbalesWeight) = DetectPushables(moveInput, this);
-        print(pushbalesWeight);
         if (transform.localScale.y > 1 && (IsGoingToStand(moveInput) || IsStanding()))
         {
             if (pushbalesWeight > 0)

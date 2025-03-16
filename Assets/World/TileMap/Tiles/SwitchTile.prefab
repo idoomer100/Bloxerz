@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 28e4f355f9f46c048ba64ae5fff9692d, type: 2}
+  - {fileID: 2100000, guid: 16df799a71a12214fad35db282ae48f4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -102,6 +102,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gateTiles: []
   isSwitch: 1
+  lever: {fileID: 0}
 --- !u!65 &1679619545805742625
 BoxCollider:
   m_ObjectHideFlags: 0

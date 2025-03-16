@@ -5,6 +5,7 @@ public class ButtonTile : Tile
 {
     [SerializeField] List<MovingTile> gateTiles = new List<MovingTile>();
     [SerializeField] bool isSwitch = false;
+    [SerializeField] Transform lever;
 
     bool pressed = false;
 
@@ -22,6 +23,11 @@ public class ButtonTile : Tile
         {
             pressed = true;
 
+            if (lever != null)
+            {
+                lever.transform.position = transform.position;
+            }
+
             OpenGates();
         }
     }
@@ -31,6 +37,10 @@ public class ButtonTile : Tile
         if (isSwitch)
         {
             OpenGates();
+            if (lever != null)
+            {
+                lever.transform.position = transform.position;
+            }
         }
     }
 
@@ -39,6 +49,10 @@ public class ButtonTile : Tile
         if (isSwitch)
         {
             OpenGates();
+            if (lever != null)
+            {
+                lever.transform.position = transform.position + Vector3.up * transform.localScale.y * 0.5f;
+            }
         }
     }
 }

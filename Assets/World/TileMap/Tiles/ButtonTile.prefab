@@ -123,8 +123,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gateTiles: []
-  isSwitch: 0
-  lever: {fileID: 876451560765214019}
+  pushedPart: {fileID: 876451560765214019}
+  pressedMaterial: {fileID: 2100000, guid: 5f497684531b7df41be7da28496249b4, type: 2}
+  mesh: {fileID: 0}
 --- !u!1 &2230441505733246885
 GameObject:
   m_ObjectHideFlags: 0
@@ -137,7 +138,7 @@ GameObject:
   - component: {fileID: 4035378070091440907}
   - component: {fileID: 3465630829931225845}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: pushed part
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

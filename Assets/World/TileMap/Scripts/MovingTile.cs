@@ -6,10 +6,20 @@ public class MovingTile : Tile
 {
     [SerializeField] [Tooltip("Diagonal Movement is not recommended (x xor y).")] Vector2Int moveAmount;
     [SerializeField] [Range(0,10)] float moveSpeed = 3;
+    [SerializeField] Material pressedMaterial;
+
+    private MeshRenderer mesh;
+    private Material defaultMaterial;
 
     private bool moving = false;
     private int state = 1;
-    
+
+    private void Start()
+    {
+        mesh = GetComponent<MeshRenderer>();
+        defaultMaterial = mesh.material;
+    }
+
     public override void OnPlayerStand(Transform bloxer, int height)
     {
         return;
@@ -17,10 +27,8 @@ public class MovingTile : Tile
 
     public void Open()
     {
-        if (!moving)
-        {
-            StartCoroutine(Move());
-        }
+        StartCoroutine(Move());
+        mesh.material = state == 1 ? pressedMaterial : defaultMaterial;
     }
 
     private IEnumerator Move()

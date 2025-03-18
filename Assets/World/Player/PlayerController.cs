@@ -95,7 +95,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnSwitch(InputValue value)
     {
-        SwitchActiveBloxer();
+        if (bloxerz.Length > 1)
+        {
+            SwitchActiveBloxer();
+        }
     }
 
     private void SwitchActiveBloxer()
@@ -107,6 +110,7 @@ public class PlayerController : MonoBehaviour
         }
 
         cmCamera.Follow = bloxerz[activeBloxer].transform;
+        FocusEffect.Instance.Focus(bloxerz[activeBloxer].transform);
     }
 
     public BloxerController MergeBloxerz(Transform bloxer1ToMerge, Transform bloxer2ToMerge)
@@ -127,6 +131,8 @@ public class PlayerController : MonoBehaviour
         Destroy(bloxer2ToMerge.gameObject);
 
         ScheduleBloxerzDetection();
+
+        FocusEffect.Instance.Focus(spawnedBloxer.transform);
 
         return spawnedBloxer;
     }

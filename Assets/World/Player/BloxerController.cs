@@ -6,13 +6,18 @@ using System;
 
 public class BloxerController : Movable
 {
-    [SerializeField] [Range(100f, 300f)] private float _rollSpeed = 3f;
+    [SerializeField] [Range(100f, 300f)] private float rollSpeed = 3f;
+    [SerializeField] [Range(0, 2)] private float collisionEffectDuration = 1f;
 
     PlayerController _playerController;
+    Material material;
+
+    bool playingCollisionEffect;
 
     private void Start()
     {
         _playerController = transform.parent.GetComponent<PlayerController>();
+        material = GetComponent<MeshRenderer>().material;
 
         CheckGround(Vector3.zero);
     }
@@ -37,6 +42,8 @@ public class BloxerController : Movable
         {
             if (pushbalesWeight > 0)
             {
+                if (!playingCollisionEffect)
+                    StartCoroutine(TriggerCollisionEffect(moveInput));
                 yield break;
             }
         }
@@ -44,6 +51,8 @@ public class BloxerController : Movable
         {
             if (pushbalesWeight > transform.localScale.y)
             {
+                if (!playingCollisionEffect)
+                    StartCoroutine(TriggerCollisionEffect(moveInput));
                 yield break;
             }
             else
@@ -60,7 +69,7 @@ public class BloxerController : Movable
         float rotatedAngle = 0f;
         while (rotatedAngle < 90f)
         {
-            float step = _rollSpeed * Time.deltaTime;
+            float step = rollSpeed * Time.deltaTime;
             if (rotatedAngle + step > 90f)
                 step = 90f - rotatedAngle;
             transform.RotateAround(pivot, rollAxis, step);
@@ -73,6 +82,29 @@ public class BloxerController : Movable
         CheckGround(moveInput);
 
         HandleMerge();
+    }
+
+    IEnumerator TriggerCollisionEffect(Vector3 collisionDirection)
+    {
+        playingCollisionEffect = true;
+
+        float elapsed = 0;
+        
+        material.SetVector("_CollisionDirection", collisionDirection);
+
+        while (elapsed < collisionEffectDuration)
+        {
+            elapsed += Time.deltaTime;
+            float intensity = Mathf.Sin((elapsed / collisionEffectDuration) * Mathf.PI); 
+
+            material.SetFloat("_CollisionEffect", intensity);
+
+            yield return null;
+        }
+
+        material.SetFloat("_CollisionEffect", 0);
+
+        playingCollisionEffect = false;
     }
 
     private BloxerController CheckMerge(Vector3 direction, Vector3 offset)

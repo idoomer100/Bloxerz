@@ -4,10 +4,17 @@ using UnityEngine;
 public class ButtonTile : Tile
 {
     [SerializeField] List<MovingTile> gateTiles = new List<MovingTile>();
-    [SerializeField] bool isSwitch = false;
-    [SerializeField] Transform lever;
+    [SerializeField] Transform pushedPart;
+    [SerializeField] Material pressedMaterial;
+    
+    MeshRenderer mesh;
 
     bool pressed = false;
+
+    private void Start()
+    {
+        mesh = pushedPart.GetComponent<MeshRenderer>();    
+    }
 
     private void OpenGates()
     {
@@ -19,40 +26,18 @@ public class ButtonTile : Tile
 
     public override void OnPlayerStand(Transform bloxer, int height)
     {
-        if (!isSwitch && !pressed)
+        if (!pressed)
         {
             pressed = true;
 
-            if (lever != null)
+            if (pushedPart != null)
             {
-                lever.transform.position = transform.position;
+                pushedPart.transform.position = transform.position;
             }
 
             OpenGates();
-        }
-    }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (isSwitch)
-        {
-            OpenGates();
-            if (lever != null)
-            {
-                lever.transform.position = transform.position;
-            }
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (isSwitch)
-        {
-            OpenGates();
-            if (lever != null)
-            {
-                lever.transform.position = transform.position + Vector3.up * transform.localScale.y * 0.5f;
-            }
+            mesh.material = pressedMaterial;
         }
     }
 }

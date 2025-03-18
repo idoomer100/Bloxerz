@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 5c67412d1fa219247b62af66490e2518, type: 2}
+  - {fileID: 2100000, guid: 1028a43e10aa0724684608e8451838f6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -108,7 +108,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 9
   state: 0
-  _rollSpeed: 260
+  rollSpeed: 261.6
+  collisionEffectDuration: 0.5
 --- !u!65 &5602329683248147402
 BoxCollider:
   m_ObjectHideFlags: 0

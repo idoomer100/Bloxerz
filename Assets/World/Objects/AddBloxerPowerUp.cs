@@ -8,7 +8,7 @@ public class AddBloxerPowerUp : PowerUp
         {
             bloxer.rotation = Quaternion.identity;
             bloxer.localScale = new Vector3(1, 2, 1);
-            bloxer.position = bloxer.position + Vector3.up * 0.5f;
+            bloxer.position += Vector3.up * 0.5f;
 
             Destroy(gameObject);
         }
@@ -20,7 +20,7 @@ public class AddBloxerPowerUp : PowerUp
             addDirection.y = 0;
             addDirection.Normalize();
 
-            bloxer.position = bloxer.position + addDirection * 0.5f;
+            bloxer.position += addDirection * 0.5f;
 
             Destroy(gameObject);
         }

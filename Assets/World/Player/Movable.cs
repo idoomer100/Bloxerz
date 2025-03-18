@@ -20,7 +20,7 @@ public class Movable : MonoBehaviour
 
         if (depth > 4) return (pushList, totalMass);
 
-        if (depth == 0 && transform.localScale.y > 1)
+        if (depth == 0 && transform.localScale.y > 1 && state != MovableState.SLIDING)
         {
             if (pushingObject.IsGoingToStand(direction))
             {
@@ -102,13 +102,14 @@ public class Movable : MonoBehaviour
         state = MovableState.PUSHED;
 
         Vector3 startPosition = transform.position;
-        Vector3 endPosition = transform.position + direction;
 
         float time = 0;
         while (time < 1)
         {
             time += Time.deltaTime * _pushSpeed;
-            transform.position = Vector3.Lerp(startPosition, endPosition, time);
+            Vector3 updatedStartPosition = new Vector3(startPosition.x, transform.position.y, startPosition.z);
+            Vector3 updatedEndPosition = updatedStartPosition + direction;
+            transform.position = Vector3.Lerp(updatedStartPosition, updatedEndPosition, time);
             yield return null;
         }
 
